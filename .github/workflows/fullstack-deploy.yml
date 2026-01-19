@@ -20,7 +20,6 @@ jobs:
           cd frontend
           npm install 
           npm run build
-          echo "${{ secrets.EC2_SSH_KEY }}"
 
       - uses: aws-actions/configure-aws-credentials@v4
         with: 
@@ -39,18 +38,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4 
 
-      - name: Prepare SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
       - name: Copy backend to EC2 
         uses: appleboy/scp-action@v0.1.7
         with: 
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
-          key_path: ~/.ssh/id_rsa
+          key: ${{ secrets.EC2_SSH_KEY }}
           source: "backend,docker-compose.yaml"
           target: "/home/ubuntu/app"
 
@@ -59,7 +52,7 @@ jobs:
         with: 
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
-          key_path: ~/.ssh/id_rsa
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/ubuntu/app
             docker compose down
