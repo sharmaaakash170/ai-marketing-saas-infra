@@ -56,6 +56,6 @@ jobs:
           debug: true
           use_insecure_cipher: true
           script: |
-            cd /home/ubuntu/app
+            cd /home/ubuntu/app/backend
             docker compose down
             docker compose up -d --build
