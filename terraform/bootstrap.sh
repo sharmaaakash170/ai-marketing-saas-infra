@@ -14,5 +14,5 @@ apt install -y \
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 apt install -y nodejs
 
-systemctl enable nginx postgresql redis-server
-systemctl start nginx postgresql redis-server 
+# systemctl enable nginx postgresql redis-server
+# systemctl start nginx postgresql redis-server 
