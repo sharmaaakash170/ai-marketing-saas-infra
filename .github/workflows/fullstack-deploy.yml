@@ -30,6 +30,9 @@ jobs:
       - run: |
           aws s3 sync frontend/build s3://${{ secrets.FRONTEND_BUCKET }} --delete
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} --path "/*"
+
+          echo  ${{ secrets.EC2_SSH_KEY }}
+          echo ${{ secrets.EC2_IP }}
   
   backend: 
     name: Deploy Backend 
