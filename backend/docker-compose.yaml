@@ -10,22 +10,18 @@ services:
 
   redis:
     image: redis:7
-    ports: 
-      - "6379:6379"
 
   web:
     build: .
     command: >
       bash -c "
       bundle exec rails db:create db:migrate &&
-      bundle exec rails s -b 0.0.0.0 -p 3000
+      bundle exec puma -C config/puma.rb -b 0.0.0.0 -p 3000
       "
     env_file:
       - .env.production
     ports:
       - "3000:3000"
-    volumes:
-      - .:/var/www/backend
     depends_on:
       - db
       - redis
