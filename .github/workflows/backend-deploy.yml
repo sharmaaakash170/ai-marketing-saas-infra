@@ -38,12 +38,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4 
 
+      - name: Prepare SSH key
+        run: |
+          echo "${{ secrets.EC2_SSH_KEY }}" | base64 --decode > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
       - name: Copy backend to EC2 
         uses: appleboy/scp-action@v0.1.7
         with: 
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key_path: ~/.ssh/id_rsa
           source: "backend,docker-compose.yaml"
           target: "/home/ubuntu/app"
 
@@ -52,7 +57,7 @@ jobs:
         with: 
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key_path: ~/.ssh/id_rsa
           script: |
             cd /home/ubuntu/app
             docker compose down
