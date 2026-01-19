@@ -1,0 +1,5 @@
+aws_region = "us-east-1"
+project_name = "ai-marketing-saas"
+key_name = "ai-marketing-saas-key"
+subnet_cidr_block = "10.0.1.0/24"
+vpc_cidr_block = "10.0.0.0/16"
