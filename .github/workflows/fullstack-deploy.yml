@@ -117,7 +117,7 @@ jobs:
 
       - name: Health check 
         run: |
-          curl -f http://${{ secrets.DOMAIN }}/health || exit 1
+          curl -f http://${{ secrets.EC2_IP }}/health || exit 1
 
       - name: Slack notification for successful deployment 
         if: success()
