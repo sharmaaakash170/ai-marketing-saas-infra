@@ -23,13 +23,19 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with: 
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID1 }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - run: |
           aws s3 sync frontend/build s3://${{ secrets.FRONTEND_BUCKET }} --delete
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} --path "/*"
+
+      - name: Capture frontend deployment error
+        id: deploy
+        run: |
+          set -o pipefail
+          ./deploy.sh 2>&1 | tee deploy.log
         
       - name: Slack notification for successful deployment 
         if: success()
@@ -39,11 +45,20 @@ jobs:
             ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Slack notification for faliure deployment 
+      #   if: failure()
+      #   run: |
+      #     curl -X POST -H 'Content-type: application/json' \
+      #       --data '{"text":"=> Frontend deployment to Claude Staging failed!"}' \
+      #       ${{ secrets.SLACK_WEBHOOK_URL }}
+
         if: failure()
         run: |
+          ERROR_MSG=$(tail -n 20 deploy.log | sed 's/"/\\"/g')
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"=> Frontend deployment to Claude Staging failed!"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+          --data "{
+            \"text\": \"❌ Deployment Failed\n\`\`\`$ERROR_MSG\`\`\`\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
   
   backend: 
     name: Deploy Backend 
@@ -87,3 +102,7 @@ jobs:
           curl -X POST -H 'Content-type: application/json' \
             --data '{"text":"=> Backend deployment to Claude Staging failed!"}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Health check 
+        run: |
+          curl -f http://${{ secrets.DOMAIN }}/health || exit 1
