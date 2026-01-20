@@ -78,12 +78,12 @@ jobs:
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"=> Frontend deployed successfully to Claude Staging!"}' \
+            --data '{"text":"=> Backend deployed successfully to Claude Staging!"}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Slack notification for faliure deployment 
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"=> Frontend deployment to Claude Staging failed!"}' \
+            --data '{"text":"=> Backend deployment to Claude Staging failed!"}' \
             ${{ secrets.SLACK_WEBHOOK_URL }}
