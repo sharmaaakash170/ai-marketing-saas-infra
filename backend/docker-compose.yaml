@@ -20,9 +20,9 @@ services:
       bundle exec rails db:create db:migrate &&
       bundle exec rails s -b 0.0.0.0 -p 3000
       "
-    env_file:
-      - .env.production
-      - .env.dev
+    # env_file:
+    #   - .env.production
+    #   - .env.dev
     ports:
       - "3000:3000"
     volumes:
