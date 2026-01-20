@@ -3,6 +3,8 @@ name: Deploy FullStack
 on: 
   push: 
     branches: [ main ]
+env: 
+  ENVIRONMENT: dev
     
 jobs:
   frontend: 
@@ -31,18 +33,33 @@ jobs:
           aws s3 sync frontend/build s3://${{ secrets.FRONTEND_BUCKET }} --delete
           aws cloudfront create-invalidation --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} --path "/*"
 
-      - name: Capture frontend deployment error
-        id: deploy
-        run: |
-          set -o pipefail
-          ./deploy.sh 2>&1 | tee deploy.log
+      # - name: Capture frontend deployment error
+      #   id: deploy
+      #   run: |
+      #     set -o pipefail
+      #     ./deploy.sh 2>&1 | tee deploy.log
         
       - name: Slack notification for successful deployment 
+        # if: success()
+        # run: |
+        #   curl -X POST -H 'Content-type: application/json' \
+        #     --data '{"text":"=> Frontend deployed successfully to Claude Staging!"}' \
+        #     ${{ secrets.SLACK_WEBHOOK_URL }}
+
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"=> Frontend deployed successfully to Claude Staging!"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+          --data "{
+            \"text\": \"✅ *Deployment Successful* 🚀\n\
+            *App:* Frontend\n\
+            *Environment:* $ENVIRONMENT\n\
+            *Branch:* ${{ github.ref_name }}\n\
+            *Triggered by:* ${{ github.actor }}\n\
+            *Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\n\
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Logs>\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
       - name: Slack notification for faliure deployment 
       #   if: failure()
@@ -53,10 +70,15 @@ jobs:
 
         if: failure()
         run: |
-          ERROR_MSG=$(tail -n 20 deploy.log | sed 's/"/\\"/g')
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"❌ Deployment Failed\n\`\`\`$ERROR_MSG\`\`\`\"
+            \"text\": \"❌ *Deployment Failed* 🚨\n\
+            *App:* Frontend\n\
+            *Environment:* $ENVIRONMENT\n\
+            *Branch:* ${{ github.ref_name }}\n\
+            *Triggered by:* ${{ github.actor }}\n\
+            *Job:* ${{ github.job }}\n\
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here to view failure logs>\"
           }" \
           ${{ secrets.SLACK_WEBHOOK_URL }}
   
