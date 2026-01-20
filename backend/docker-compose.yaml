@@ -22,6 +22,7 @@ services:
       "
     env_file:
       - .env.production
+      - .env.dev
     ports:
       - "3000:3000"
     volumes:
