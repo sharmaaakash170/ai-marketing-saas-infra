@@ -10,7 +10,6 @@ jobs:
   frontend:
     name: Deploy frontend
     runs-on: ubuntu-latest
-    # Dynamic environment based on branch
     environment: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
     env:
       ENVIRONMENT: ${{ github.ref_name == 'main' && 'prod' || 'dev' }}
@@ -46,7 +45,7 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"✅ *Deployment Successful* 🚀\n\
+            \"text\": \" *Deployment Successful* \n\
             *App:* Frontend\n\
             *Environment:* $ENVIRONMENT\n\
             *Branch:* ${{ github.ref_name }}\n\
@@ -61,7 +60,7 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"❌ *Deployment Failed* 🚨\n\
+            \"text\": \" *Deployment Failed* \n\
             *App:* Frontend\n\
             *Environment:* $ENVIRONMENT\n\
             *Branch:* ${{ github.ref_name }}\n\
@@ -113,13 +112,13 @@ jobs:
           for i in {1..30}; do
             STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://${{ secrets.EC2_IP }}/health || true)
             if [ "$STATUS" = "200" ]; then
-              echo "✅ Backend is healthy"
+              echo "Backend is healthy"
               exit 0
             fi
-            echo "⏳ Status: $STATUS — retrying in 5s..."
+            echo " Status: $STATUS — retrying in 5s..."
             sleep 5
           done
-          echo "❌ Backend did not become healthy in time"
+          echo " Backend did not become healthy in time"
           exit 1
 
       - name: Slack notification - success
@@ -127,7 +126,7 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"✅ *Deployment Successful* 🚀\n\
+            \"text\": \" *Deployment Successful* \n\
             *App:* Backend\n\
             *Environment:* $ENVIRONMENT\n\
             *Branch:* ${{ github.ref_name }}\n\
@@ -142,7 +141,7 @@ jobs:
         run: |
           curl -X POST -H 'Content-type: application/json' \
           --data "{
-            \"text\": \"❌ *Deployment Failed* 🚨\n\
+            \"text\": \" *Deployment Failed* \n\
             *App:* Backend\n\
             *Environment:* $ENVIRONMENT\n\
             *Branch:* ${{ github.ref_name }}\n\
