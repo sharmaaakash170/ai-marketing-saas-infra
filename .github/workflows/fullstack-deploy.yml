@@ -77,24 +77,38 @@ jobs:
     steps:
       - uses: actions/checkout@v4 
 
-      - name: Copy backend to EC2 
+      # - name: Copy backend to EC2 
+      #   uses: appleboy/scp-action@v0.1.7
+      #   with: 
+      #     host: ${{ secrets.EC2_IP }}
+      #     username: ubuntu
+      #     key: ${{ secrets.EC2_SSH_KEY }}
+      #     source: "backend,docker-compose.yaml"
+      #     target: "/home/ubuntu/app"
+
+      - name: Copy backend to EC2
         uses: appleboy/scp-action@v0.1.7
-        with: 
+        with:
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: |
+            ${{ secrets.EC2_SSH_KEY }}
           source: "backend,docker-compose.yaml"
           target: "/home/ubuntu/app"
+
 
       - name: SSH connectivity test
         uses: appleboy/ssh-action@v0.1.3
         with:
           host: ${{ secrets.EC2_IP }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY }}
+          key: |
+            ${{ secrets.EC2_SSH_KEY }}
+          port: 22
           script: |
             whoami
             hostname
+
 
       # - name: Deploy backend via SSH 
       #   uses: appleboy/ssh-action@v0.1.3
