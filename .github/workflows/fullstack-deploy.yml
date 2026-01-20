@@ -25,7 +25,7 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with: 
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID1 }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
@@ -40,12 +40,6 @@ jobs:
       #     ./deploy.sh 2>&1 | tee deploy.log
         
       - name: Slack notification for successful deployment 
-        # if: success()
-        # run: |
-        #   curl -X POST -H 'Content-type: application/json' \
-        #     --data '{"text":"=> Frontend deployed successfully to Claude Staging!"}' \
-        #     ${{ secrets.SLACK_WEBHOOK_URL }}
-
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
@@ -62,12 +56,6 @@ jobs:
 
 
       - name: Slack notification for faliure deployment 
-      #   if: failure()
-      #   run: |
-      #     curl -X POST -H 'Content-type: application/json' \
-      #       --data '{"text":"=> Frontend deployment to Claude Staging failed!"}' \
-      #       ${{ secrets.SLACK_WEBHOOK_URL }}
-
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
@@ -111,20 +99,37 @@ jobs:
             sudo docker compose down
             sudo docker compose up -d --build
 
+      - name: Health check 
+        run: |
+          curl -f http://${{ secrets.DOMAIN }}/health || exit 1
+
       - name: Slack notification for successful deployment 
         if: success()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"=> Backend deployed successfully to Claude Staging!"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
+          --data "{
+            \"text\": \"✅ *Deployment Successful* 🚀\n\
+            *App:* Backend\n\
+            *Environment:* $ENVIRONMENT\n\
+            *Branch:* ${{ github.ref_name }}\n\
+            *Triggered by:* ${{ github.actor }}\n\
+            *Commit:* <${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|View Commit>\n\
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Workflow Logs>\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
 
       - name: Slack notification for faliure deployment 
         if: failure()
         run: |
           curl -X POST -H 'Content-type: application/json' \
-            --data '{"text":"=> Backend deployment to Claude Staging failed!"}' \
-            ${{ secrets.SLACK_WEBHOOK_URL }}
-
-      - name: Health check 
-        run: |
-          curl -f http://${{ secrets.DOMAIN }}/health || exit 1
+          --data "{
+            \"text\": \"❌ *Deployment Failed* 🚨\n\
+            *App:* Backend\n\
+            *Environment:* $ENVIRONMENT\n\
+            *Branch:* ${{ github.ref_name }}\n\
+            *Triggered by:* ${{ github.actor }}\n\
+            *Job:* ${{ github.job }}\n\
+            <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here to view failure logs>\"
+          }" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
