@@ -1,3 +1,6 @@
 terraform/.terraform
 terraform/terraform.tfstate* 
 terraform/ai-marketing-saas-key.pem 
+
+
+github_ec2*
